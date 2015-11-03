@@ -1,5 +1,8 @@
 require("./node_modules/bootstrap/dist/css/bootstrap.min.css")
 import React from 'react';
+import Rebase from 're-base';
+
+var base = Rebase.createClass("https://scorching-inferno-265.firebaseio.com/");
 
 export class App extends React.Component {
   constructor(props){
@@ -7,29 +10,20 @@ export class App extends React.Component {
     this.state = {
       cloudName: this.props.cloudName,
       uploadPreset: this.props.uploadPreset,
-      bytes: null,
-      created_at: null,
-      etag: null,
-      format: null,
-      height: null,
-      width: null,
-      path: null,
-      public_id: null,
-      resource_type: null,
-      secure_url: null,
-      signature: null,
-      tags: [],
-      thumbnail_url: null,
-      type:null,
-      url: null,
-      version: null,
       isError: false,
       errorMessage: null,
-      uuid: undefined,
       showPoweredBy: false,
       allowedFormats: null,
-      uuid: this.uuid()
+      uuid: this.uuid(),
+      imageList: []
     };
+  }
+  componentDidMount() {
+    base.syncState('images', {
+      context: this,
+      state: 'imageList',
+      asArray: true
+    });
   }
   uuid (){
     function guid() {
@@ -76,11 +70,11 @@ export class App extends React.Component {
     }
 
     if(this.props.resourceType){
-      options.resourceType = this.props.resourceType;
+      options.resource_type = this.props.resourceType;
     }
 
     if(this.props.allowedFormats){
-      options.allowedFormats = this.props.allowedFormats
+      options.client_allowed_formats = this.props.allowedFormats;
     }
 
     var context = {};
@@ -104,48 +98,29 @@ export class App extends React.Component {
       errorMessage: 'No result returned from Cloudinary'
     });
   }
-  setUploadResult (uploadedImage){
-    this.setState({
-      bytes: uploadedImage.bytes,
-      createdAt: uploadedImage.created_at,
-      etag: uploadedImage.etag,
-      format: uploadedImage.format,
-      height: uploadedImage.height,
-      path: uploadedImage.path,
-      publicId: uploadedImage.public_id,
-      resourceType: uploadedImage.resource_type,
-      secureUrl: uploadedImage.secure_url,
-      signature: uploadedImage.signature,
-      tags: uploadedImage.tags,
-      thumbnailUrl: uploadedImage.thumbnail_url,
-      type: uploadedImage.type,
-      url: uploadedImage.url,
-      version: uploadedImage.version,
-      width: uploadedImage.width
-    });
-   }
-   handleClick (ev){
-     debugger
-     self = this;
-     try{
-       var options = this.getUploadOptions();
-       cloudinary.openUploadWidget(
-         options, 
-         function(error, result) { 
-           if (error){
-             self.setError(true, error)
-               return false;
-             }
-           if (!result || result.length === 0){
-             self.setError(true, 'No result from Cloudinary');
-             return false;
-           }
-           var uploadedImage = result[0];
-           self.setUploadResult(uploadedImage);
-           return true;
-           }
+  handleClick (ev){
+    self = this;
+      try{
+        var options = this.getUploadOptions();
+        cloudinary.openUploadWidget(
+          options,
+          function(error, result) {
+            if (error){
+              self.setError(true, error)
+                return false;
+              }
+            if (!result || result.length === 0) {
+              self.setError(true, 'No result from Cloudinary');
+              return false;
+            }
+            self.setState({
+              imageList: self.state.imageList.concat(result)
+            });
+
+            return true;
+          }
         );
-     } catch(e) {
+      } catch(e) {
        self.setError(true, e);
          return false;
      }
@@ -153,16 +128,26 @@ export class App extends React.Component {
     }
     render (){
       var uploader_id = "uploader_" + this.state.uuid;
-      var image = this.state.thumbnailUrl ? this.state.thumbnailUrl: 'image_upload.png';
+      var images = this.state.imageList.map((data, i) => {
+        return (
+          <img
+            key={i}
+            alt={data.original_filename}
+            src={data.url}
+            height="100"
+            width="100"
+          />
+        )
+      });
+
       return (
         <section>
-          <div>
-            <img src={image} alt='Put Sarbjit' />
-           </div>
-           <a ref='uploader' id={uploader_id} href="#" 
-             className={this.props.buttonClass}
-             onClick={this.handleClick.bind(this)}>{this.props.buttonCaption}</a>
-           </section>
+          <a ref='uploader' id={uploader_id} href="#"
+            className={this.props.buttonClass}
+            onClick={this.handleClick.bind(this)}>{this.props.buttonCaption}</a>
+          <br/><br/>
+          {images}
+        </section>
       )
     }
 }
@@ -195,7 +180,7 @@ App.defaultProps = {
   showPoweredBy: false,
   sources: ['local', 'url', 'camera'],
   defaultSource: 'local',
-  multiple: false,
+  multiple: true,
   maxFiles: null,
   cropping: null,
   croppingAspectRation: null,
@@ -210,7 +195,7 @@ App.defaultProps = {
   maxImageWidth: null,
   maxImageHeight: null,
   buttonClass: 'cloudinary-button',
-  buttonCaption: 'Upload image'    
+  buttonCaption: 'Upload images'
 };
 
-React.render(<App cloudName='realarpit' uploadPreset='h2sbmprz' />, document.querySelector("#app"));
+React.render(<App cloudName='reactrocks' uploadPreset='gnxkwfvx' />, document.querySelector("#app"));
