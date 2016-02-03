@@ -56,4 +56,3 @@ The React component keeps track of the information returned from the upload.
 * Transformation
 * Clean up
 * Integrate Gallery Component (Carousel etc.)
-You can react me on Twitter [@realarpit](https://twitter.com/RealArpit)
