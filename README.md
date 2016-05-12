@@ -1,7 +1,7 @@
 # React Cloudinary Uploader
 React File Uploader for [Cloudinary](http://cloudinary.com/documentation/upload_widget) with or without Firebase integration.
 This React component wraps the Cloudinary Widget and store the images (url) in firebase.
-You can upload multiple images from the cloudinary widget, and you can use **reactcloudinary.jsx** file if you don't wish want to handle image storing without firebase.
+You can upload multiple images from the cloudinary widget, and you can use **reactcloudinary.jsx** file if you don't want to handle storation image data without firebase.
 
 # Using in project
 ==============
